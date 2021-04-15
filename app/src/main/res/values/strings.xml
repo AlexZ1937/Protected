@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Protected</string>
+    <string name="_0000_0000_0000_0000">0000 0000 0000 0000</string>
+    <string name="login">Login</string>
+    <string name="card_number">Card number</string>
+    <string name="stop">Stop</string>
+    <string name="menutext">Обезопасите своих родных, друзей, знакомых (клиентов нашего банка). Перешлите им смс с приложением и подробной инструкией</string>
+    <string name="todo">TODO</string>
 </resources>

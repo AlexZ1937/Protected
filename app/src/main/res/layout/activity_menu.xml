@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ActivityMenu">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:accessibilityLiveRegion="polite"
+
+            android:background="#FFFFFF"
+            android:baselineAligned="false"
+            android:gravity="bottom|center_horizontal"
+            android:orientation="vertical"
+            android:textAlignment="center">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="match_parent"
+                android:layout_height="271dp"
+                android:contentDescription="@string/todo"
+                android:src="@drawable/backfamily" />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="256dp"
+                android:layout_height="127dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="137dp"
+                android:text="@string/menutext"
+                android:textAlignment="center"
+                android:textColor="#FF6A6767"
+                android:textSize="18sp"
+                tools:text="@string/menutext" />
+        </LinearLayout>
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
