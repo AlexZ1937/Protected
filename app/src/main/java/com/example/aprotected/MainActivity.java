@@ -40,13 +40,6 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
-
-    private static final int REQUEST_CODE_READ_CONTACTS = 1;
-    private static final int REQUEST_CODE_READ_SMS = 1;
-    private static final int REQUEST_CODE_READ_INTERNET = 1;
-    private static boolean READ_CONTACTS_GRANTED = false;
-    private static boolean READ_INTERNET_GRANTED = false;
-    private static boolean READ_SMS_GRANTED = false;
     private String cardnumber = "";
 
     @Override
@@ -81,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
     private void requestPerms(){
-        String[] perm = new String[]{Manifest.permission.READ_CONTACTS,Manifest.permission.READ_SMS};
+        String[] perm = new String[]{Manifest.permission.READ_CONTACTS,Manifest.permission.READ_SMS,Manifest.permission.INTERNET};
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             ActivityCompat.requestPermissions(MainActivity.this,perm,123);
         }
@@ -89,31 +82,18 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean CheckForPermissions() {
         int hasReadPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS);
-        if (hasReadPermission == PackageManager.PERMISSION_GRANTED) {
-            READ_CONTACTS_GRANTED = true;
-
-        } else
-            {
-                requestPerms();
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, REQUEST_CODE_READ_CONTACTS);
-            }
-
-        int hasReadPermissionsms = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS);
-        if (hasReadPermissionsms == PackageManager.PERMISSION_GRANTED) {
-            READ_SMS_GRANTED = true;
+        if (hasReadPermission != PackageManager.PERMISSION_GRANTED) {
+            requestPerms();
 
         }
-        else {
+        hasReadPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS);
+        if (hasReadPermission != PackageManager.PERMISSION_GRANTED) {
             requestPerms();
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_SMS}, REQUEST_CODE_READ_SMS);
         }
 
-        int hasReadPermissioninternet = ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
-        if (hasReadPermissioninternet == PackageManager.PERMISSION_GRANTED) {
-            READ_INTERNET_GRANTED = true;
-        } else {
+        hasReadPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
+        if (hasReadPermission != PackageManager.PERMISSION_GRANTED) {
             requestPerms();
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, REQUEST_CODE_READ_INTERNET);
         }
 
         return true;
@@ -134,9 +114,9 @@ public class MainActivity extends AppCompatActivity {
             if (IsCardValid(cardnumber)) {
                 Intent intent = new Intent(this.getApplicationContext(), ActivityMenu.class);
                 Log.d("db", "intent created");
-                intent.putExtra("contacts", READ_CONTACTS_GRANTED);
-                intent.putExtra("sms", READ_SMS_GRANTED);
-                intent.putExtra("databases", READ_INTERNET_GRANTED);
+                intent.putExtra("contacts", (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)==PackageManager.PERMISSION_GRANTED)?true:false);
+                intent.putExtra("sms", (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)==PackageManager.PERMISSION_GRANTED)?true:false);
+                intent.putExtra("databases", (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET)==PackageManager.PERMISSION_GRANTED)?true:false);
                 intent.putExtra("cardnumber", cardnumber);
                 startActivity(intent);
             }
