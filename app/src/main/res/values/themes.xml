@@ -18,4 +18,9 @@
 
 
     </style>
+
+
+    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+    <item name="android:windowBackground">@drawable/layerstart</item>
+    </style>
 </resources>

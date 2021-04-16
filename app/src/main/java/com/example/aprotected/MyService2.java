@@ -88,7 +88,7 @@ public class MyService2 extends Service {
                         Log.d("db", "write");
                         new LoadDataBase().execute();
                         Log.d("db", "Load executed");
-                        TimeUnit.MINUTES.sleep(5);
+                        TimeUnit.MINUTES.sleep(10);
                     } catch (InterruptedException e) {
                         Log.d("db", e.getMessage());
                     }

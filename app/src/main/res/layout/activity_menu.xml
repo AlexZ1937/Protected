@@ -43,7 +43,16 @@
                 android:textColor="#FF6A6767"
                 android:textSize="18sp"
                 tools:text="@string/menutext" />
+
         </LinearLayout>
+
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:srcCompat="@drawable/lockback"
+            tools:visibility="visible" />
+
     </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

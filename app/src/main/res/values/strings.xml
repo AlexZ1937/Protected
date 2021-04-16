@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Protected</string>
+    <string name="app_name">Secure</string>
     <string name="_0000_0000_0000_0000">0000 0000 0000 0000</string>
     <string name="login">Login</string>
     <string name="card_number">Card number</string>

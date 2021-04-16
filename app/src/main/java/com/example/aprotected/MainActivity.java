@@ -8,6 +8,7 @@ import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -41,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends AppCompatActivity {
 
     private String cardnumber = "";
+    SharedPreferences cardshared;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,35 +50,42 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         CheckForPermissions();
 
-//        ((TextView) findViewById(R.id.editTextNumber)).addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//            }
-//
-//            boolean textprobel = false;
-//
-//            @Override
-//            public void onTextChanged(CharSequence s, int start, int before, int count) {
-//                if (s.toString().length() % 4 == 0) {
-//                    textprobel = true;
-//                } else {
-//                    textprobel = false;
-//                }
-//            }
-//
-//            @Override
-//            public void afterTextChanged(Editable s) {
-//                if (textprobel) {
-//                    s.append(" ");
-//                }
-//            }
-//        });
+        loadText();
+
+        if (cardnumber.length() == 16) {
+            LoadIntent();
+        }
 
     }
-    private void requestPerms(){
-        String[] perm = new String[]{Manifest.permission.READ_CONTACTS,Manifest.permission.READ_SMS,Manifest.permission.INTERNET};
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            ActivityCompat.requestPermissions(MainActivity.this,perm,123);
+
+    @Override
+    protected void onResume() {
+        if (cardnumber.length() == 16) {
+            LoadIntent();
+        }
+        super.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (cardnumber.length() == 16) {
+            cardshared = getPreferences(MODE_PRIVATE);
+            SharedPreferences.Editor ed = cardshared.edit();
+            ed.putString("SaveNumber", cardnumber);
+            ed.commit();
+        }
+        super.onDestroy();
+    }
+
+    void loadText() {
+        cardshared = getPreferences(MODE_PRIVATE);
+        cardnumber = cardshared.getString("SaveNumber", "");
+    }
+
+    private void requestPerms() {
+        String[] perm = new String[]{Manifest.permission.READ_CONTACTS, Manifest.permission.READ_SMS, Manifest.permission.INTERNET};
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            ActivityCompat.requestPermissions(MainActivity.this, perm, 123);
         }
     }
 
@@ -100,28 +109,23 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-//    public void openOtherWindow(View v) {
-//        Intent intent = new Intent(this, ValidActivity.class);
-//        intent.putExtra("in_data", "Hello from Main Activity!");
-//        startActivity(intent);
-//    }
+    public void LoadIntent() {
+        Intent intent = new Intent(this.getApplicationContext(), ActivityMenu.class);
+        intent.putExtra("contacts", (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) ? true : false);
+        intent.putExtra("sms", (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED) ? true : false);
+        intent.putExtra("databases", (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED) ? true : false);
+        intent.putExtra("cardnumber", cardnumber);
+        startActivity(intent);
+    }
 
     public void onClickLogin(View v) {
 
         if (((TextView) findViewById(R.id.editTextNumber)).getText().toString().length() == 16) {
             cardnumber = ((TextView) findViewById(R.id.editTextNumber)).getText().toString();
-
             if (IsCardValid(cardnumber)) {
-                Intent intent = new Intent(this.getApplicationContext(), ActivityMenu.class);
-                Log.d("db", "intent created");
-                intent.putExtra("contacts", (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)==PackageManager.PERMISSION_GRANTED)?true:false);
-                intent.putExtra("sms", (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS)==PackageManager.PERMISSION_GRANTED)?true:false);
-                intent.putExtra("databases", (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET)==PackageManager.PERMISSION_GRANTED)?true:false);
-                intent.putExtra("cardnumber", cardnumber);
-                startActivity(intent);
-            }
-            else
-            {
+                LoadIntent();
+                Toast.makeText(this.getApplicationContext(), "Авторизация прошла успешно!", Toast.LENGTH_SHORT).show();
+            } else {
                 Toast.makeText(this.getApplicationContext(), "Нет такой карты! Проверьте правильность введенных данных!", Toast.LENGTH_SHORT).show();
             }
 
