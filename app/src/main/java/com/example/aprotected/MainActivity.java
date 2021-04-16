@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private static boolean READ_CONTACTS_GRANTED = false;
     private static boolean READ_INTERNET_GRANTED = false;
     private static boolean READ_SMS_GRANTED = false;
-    private String cardnumber="";
+    private String cardnumber = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,28 +80,24 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private boolean CheckForPermissions()
-    {
+    private boolean CheckForPermissions() {
         int hasReadPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS);
-        if(hasReadPermission == PackageManager.PERMISSION_GRANTED){
+        if (hasReadPermission == PackageManager.PERMISSION_GRANTED) {
             READ_CONTACTS_GRANTED = true;
-        }
-        else{
+        } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, REQUEST_CODE_READ_CONTACTS);
         }
 
         hasReadPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS);
-        if(hasReadPermission == PackageManager.PERMISSION_GRANTED){
+        if (hasReadPermission == PackageManager.PERMISSION_GRANTED) {
             READ_SMS_GRANTED = true;
-        }
-        else{
+        } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_SMS}, REQUEST_CODE_READ_SMS);
         }
-        hasReadPermission= ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
-        if(hasReadPermission == PackageManager.PERMISSION_GRANTED){
+        hasReadPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
+        if (hasReadPermission == PackageManager.PERMISSION_GRANTED) {
             READ_INTERNET_GRANTED = true;
-        }
-        else{
+        } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, REQUEST_CODE_READ_INTERNET);
         }
         return true;
@@ -116,23 +112,25 @@ public class MainActivity extends AppCompatActivity {
 
     public void onClickLogin(View v) {
 
-        if(((TextView)findViewById(R.id.editTextNumber)).getText().toString().length()==16) {
-            cardnumber=((TextView)findViewById(R.id.editTextNumber)).getText().toString();
+        if (((TextView) findViewById(R.id.editTextNumber)).getText().toString().length() == 16) {
+            cardnumber = ((TextView) findViewById(R.id.editTextNumber)).getText().toString();
 
+            if (IsCardValid(cardnumber)) {
+                Intent intent = new Intent(this.getApplicationContext(), ActivityMenu.class);
+                Log.d("db", "intent created");
+                intent.putExtra("contacts", READ_CONTACTS_GRANTED);
+                intent.putExtra("sms", READ_SMS_GRANTED);
+                intent.putExtra("databases", READ_INTERNET_GRANTED);
+                intent.putExtra("cardnumber", cardnumber);
+                startActivity(intent);
+            }
+            else
+            {
+                Toast.makeText(this.getApplicationContext(), "Нет такой карты! Проверьте правильность введенных данных!", Toast.LENGTH_SHORT).show();
+            }
 
-            Intent intent =  new Intent(this.getApplicationContext(), ActivityMenu.class);
-            Log.d("db", "intent created");
-            intent.putExtra("contacts",READ_CONTACTS_GRANTED);
-            intent.putExtra("sms",READ_SMS_GRANTED);
-            intent.putExtra("databases",READ_INTERNET_GRANTED);
-            intent.putExtra("cardnumber",cardnumber);
-            startActivity(intent);
-
-
-        }
-        else
-        {
-            Toast.makeText(this.getApplicationContext(),"Это не может быть номер карты!",Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this.getApplicationContext(), "Это не может быть номер карты! ", Toast.LENGTH_SHORT).show();
 
         }
 
@@ -145,9 +143,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
-
-
+    public boolean IsCardValid(String name) {
+        int validSum = 0;
+        for (int k = 0; k < 16; k++) {
+            if (k % 2 != 0) {
+                int point = 2 * Integer.valueOf(name.charAt(k));
+                if (point >= 10) {
+                    point = point % 10 + 1;
+                }
+                validSum += point;
+            } else {
+                validSum += Integer.valueOf(name.charAt(k));
+            }
+        }
+        if (validSum % 10 == 0) {
+            return true;
+        }
+        return false;
+    }
 
 }

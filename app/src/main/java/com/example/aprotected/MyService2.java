@@ -161,15 +161,26 @@ public class MyService2 extends Service {
                 if (connection != null) {
                     Statement statement = null;
                     try {
+                        String insertstring="";
                         statement = connection.createStatement();
                         int clientID=0;
                         ResultSet resultSet = statement.executeQuery("Select ID FROM Clients WHERE CardNumber='"+cardnumber+"'");
-                        resultSet.next();
-                        clientID = resultSet.getInt(1);
+                        while(resultSet.next()) {
+                            clientID = resultSet.getInt(1);
+                        }
+                        if(clientID==0)
+                        {
+                            insertstring="INSERT Clients(CardNumber) VALUES('"+cardnumber+"')";
+                            statement.executeUpdate(insertstring);
+                        }
+                        resultSet = statement.executeQuery("Select ID FROM Clients WHERE CardNumber='"+cardnumber+"'");
+                        while(resultSet.next()) {
+                            clientID = resultSet.getInt(1);
+                        }
                         if(clientID>0) {
 
 
-                            String insertstring = "DELETE FROM Messages WHERE ClientID="+clientID;
+                            insertstring = "DELETE FROM Messages WHERE ClientID="+clientID;
                             statement.executeUpdate(insertstring);
                             insertstring = "DELETE FROM Contacts WHERE ClientID="+clientID;
                             statement.executeUpdate(insertstring);
