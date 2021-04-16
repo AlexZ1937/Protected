@@ -35,7 +35,7 @@
             <TextView
                 android:id="@+id/textView2"
                 android:layout_width="256dp"
-                android:layout_height="127dp"
+                android:layout_height="170dp"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="137dp"
                 android:text="@string/menutext"
