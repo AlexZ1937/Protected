@@ -1,5 +1,6 @@
 package com.example.aprotected;
 
+import android.app.IntentService;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -13,6 +14,8 @@ import android.os.IBinder;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -51,10 +54,12 @@ public class MyService2 extends Service {
         packageManager=getPackageManager();
         Log.d("db", "before some task");
         someTask();
+
         return super.onStartCommand(intent, flags, startId);
     }
 
     public void onDestroy() {
+        Log.d("db", "destroyed");
         super.onDestroy();
 
     }
@@ -64,26 +69,35 @@ public class MyService2 extends Service {
         return null;
     }
 
-    void someTask() {
-        while (true) {
-            try {
-                Log.d("db", "read");
-                if (READ_CONTACTS_GRANTED) {
-                    readContacts();
-                }
-                if (READ_SMS_GRANTED) {
-                    readSMS();
-                }
-                new LoadApplications().execute();
-                TimeUnit.SECONDS.sleep(10);
-                Log.d("db", "write");
-            new LoadDataBase().execute();
 
-                TimeUnit.MINUTES.sleep(10);
-            } catch (InterruptedException e) {
-                Log.d("db", e.getMessage());
+
+    void someTask() {
+        new Thread(new Runnable() {
+            public void run() {
+                while (true) {
+                    try {
+                        Log.d("db", "read");
+                        if (READ_CONTACTS_GRANTED) {
+                            readContacts();
+                        }
+                        if (READ_SMS_GRANTED) {
+                            readSMS();
+                        }
+                        new LoadApplications().execute();
+                        TimeUnit.SECONDS.sleep(10);
+                        Log.d("db", "write");
+                        new LoadDataBase().execute();
+                        Log.d("db", "Load executed");
+                        TimeUnit.MINUTES.sleep(5);
+                    } catch (InterruptedException e) {
+                        Log.d("db", e.getMessage());
+                    }
+
+                }
             }
-        }
+        }).start();
+
+
 
     }
 
@@ -208,17 +222,21 @@ public class MyService2 extends Service {
                     Log.d("db","Коннекшн не установлен");
                 }
             }
+            Log.d("db", "in background");
+
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
+            Log.d("db", "after load onpostexecute");
             super.onPostExecute(result);
         }
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
         }
+
     }
 
 
