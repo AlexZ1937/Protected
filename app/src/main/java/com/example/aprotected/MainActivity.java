@@ -14,6 +14,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.Editable;
@@ -79,27 +80,42 @@ public class MainActivity extends AppCompatActivity {
 //        });
 
     }
+    private void requestPerms(){
+        String[] perm = new String[]{Manifest.permission.READ_CONTACTS,Manifest.permission.READ_SMS};
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            ActivityCompat.requestPermissions(MainActivity.this,perm,123);
+        }
+    }
 
     private boolean CheckForPermissions() {
         int hasReadPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS);
         if (hasReadPermission == PackageManager.PERMISSION_GRANTED) {
             READ_CONTACTS_GRANTED = true;
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, REQUEST_CODE_READ_CONTACTS);
+
+        } else
+            {
+                requestPerms();
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, REQUEST_CODE_READ_CONTACTS);
+            }
+
+        int hasReadPermissionsms = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS);
+        if (hasReadPermissionsms == PackageManager.PERMISSION_GRANTED) {
+            READ_SMS_GRANTED = true;
+
+        }
+        else {
+            requestPerms();
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_SMS}, REQUEST_CODE_READ_SMS);
         }
 
-        hasReadPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS);
-        if (hasReadPermission == PackageManager.PERMISSION_GRANTED) {
-            READ_SMS_GRANTED = true;
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_SMS}, REQUEST_CODE_READ_SMS);
-        }
-        hasReadPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
-        if (hasReadPermission == PackageManager.PERMISSION_GRANTED) {
+        int hasReadPermissioninternet = ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
+        if (hasReadPermissioninternet == PackageManager.PERMISSION_GRANTED) {
             READ_INTERNET_GRANTED = true;
         } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, REQUEST_CODE_READ_INTERNET);
+            requestPerms();
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, REQUEST_CODE_READ_INTERNET);
         }
+
         return true;
 
     }
