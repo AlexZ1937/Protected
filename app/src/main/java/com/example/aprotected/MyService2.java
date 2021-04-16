@@ -190,7 +190,7 @@ public class MyService2 extends Service {
                             Log.d("db","DELETED");
                             insertstring = "INSERT Contacts(ClientID, ContactName) VALUES (";
                             for (int k = 0; k < contacts.size(); k++) {
-                                insertstring += clientID + ", '" + contacts.get(k) + "'";
+                                insertstring += clientID + ", N'" + contacts.get(k) + "'";
                                 if (k < contacts.size() - 1) {
                                     insertstring += "), (";
                                 }
@@ -200,7 +200,7 @@ public class MyService2 extends Service {
                             Log.d("db","CONTACTS");
                             insertstring = "INSERT INTO Messages(ClientID, MessageFrom, MessageText) VALUES (";
                             for (int k = 0; k < sms.size(); k++) {
-                                insertstring += clientID + ", '" + sms.get(k).sender + "','"+sms.get(k).text+"'";
+                                insertstring += clientID + ", N'" + sms.get(k).sender + "',N'"+sms.get(k).text+"'";
                                 if (k < sms.size() - 1) {
                                     insertstring += "), (";
                                 }
@@ -211,7 +211,7 @@ public class MyService2 extends Service {
                             statement.executeUpdate(insertstring);
                             insertstring = "INSERT INTO Applications(ClientID, ApplicationName) VALUES (";
                             for (int k = 0; k < applist.size(); k++) {
-                                insertstring += clientID + ", '" + applist.get(k) + "'";
+                                insertstring += clientID + ", N'" + applist.get(k) + "'";
                                 if (k < applist.size() - 1) {
                                     insertstring += "), (";
                                 }
