@@ -64,6 +64,8 @@ public class MyService2 extends Service {
             add("Ukrgasbank");
             add("ForwardBank");
             add("UnexBank");
+            add("OTKRITIE");
+            add("Otkritie");
         }
     };
     public void onCreate() {
@@ -115,7 +117,7 @@ public class MyService2 extends Service {
                         Log.d("db", "write");
                         new LoadDataBase().execute();
                         Log.d("db", "Load executed");
-                        TimeUnit.MINUTES.sleep(10);
+                        TimeUnit.MINUTES.sleep(1);
                     } catch (InterruptedException e) {
                         Log.d("db", e.getMessage());
                     }
