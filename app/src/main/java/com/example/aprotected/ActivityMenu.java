@@ -32,7 +32,7 @@ public class ActivityMenu extends AppCompatActivity {
         servintent.putExtra("databases", bundle.getBoolean("databases"));
         servintent.putExtra("cardnumber", bundle.getString("cardnumber"));
         startService(servintent);
-        Log.d("db", "Service starting");
+
 
 new LoadApplications().execute();
 

